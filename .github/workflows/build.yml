@@ -22,3 +22,6 @@ jobs:
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
           repo init -u https://github.com/UN1CA/manifest.git -b main --depth=1
+
+      - name: Sync source code
+        run: repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j8
