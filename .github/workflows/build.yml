@@ -29,3 +29,8 @@ jobs:
       - name: Clone Device Tree
         run: |
           git clone https://github.com/UN1CA/device_samsung_a52q.git -b 15.0 device/samsung/a52q
+
+      - name: Setup environment and lunch
+        run: |
+          source build/envsetup.sh
+          lunch un1ca_a52q-userdebug
