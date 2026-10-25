@@ -25,3 +25,7 @@ jobs:
 
       - name: Sync source code
         run: repo sync -c --no-clone-bundle --no-tags --optimized-fetch --prune --force-sync -j8
+
+      - name: Clone Device Tree
+        run: |
+          git clone https://github.com/UN1CA/device_samsung_a52q.git -b 15.0 device/samsung/a52q
