@@ -34,3 +34,7 @@ jobs:
         run: |
           source build/envsetup.sh
           lunch un1ca_a52q-userdebug
+
+      - name: Start compilation
+        run: |
+          mka bacon
