@@ -16,11 +16,11 @@ jobs:
           sudo curl https://storage.googleapis.com/git-repo-downloads/repo > /usr/local/bin/repo
           sudo chmod a+x /usr/local/bin/repo
 
-
-      - name: Initialize UN1CA manifest
+      - name: Initialize UN1CA manifest 📂
         run: |
-          git config --global user.name "GitHub Action"
+          git config --global user.name "Github Action"
           git config --global user.email "action@github.com"
+          git config --global url."https://${{ secrets.GH_PAT }}@github.com/".insteadOf "https://github.com/"
           repo init -u https://github.com/UN1CA/manifest.git -b main --depth=1
 
       - name: Sync source code
