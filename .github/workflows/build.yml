@@ -21,5 +21,6 @@ jobs:
         run: |
           git clone --recurse-submodules https://github.com/BlackMesa123/UN1CA.git unica_source
           cd unica_source
+          sed -i '169s/return/exit/' buildenv.sh
           chmod +x buildenv.sh
           ./buildenv.sh a52q
