@@ -32,17 +32,14 @@ jobs:
         run: |
           cd work/base_s24
           
-          # Տեղադրիր S24 Ultra-ի AP փաթեթի ուղիղ ներբեռնման հղումը (Direct Link)
-          FIRMWARE_URL="https://example.com/path/to/s24_ultra_firmware.zip"
+          # Տեղադրիր քո պատճենած իրական ուղիղ հղումը այստեղ
+          FIRMWARE_URL="https://sf04.click/v2/IxJCDiMnLh80QA0wIxEGPC4WLwQyCB4lFzssIDs2ByAzMUEgOzEUQDMQMCMBOyw/FydBBxIRIRQNOx4HLycvCg8HLyQyAD4bNTEvEA07BiMzOCMGEjYGFDIIKSEhCAcHPBEeHS4wLhY8MCwnARYzLS82FDsjCyw5EjgsJTw4QQQhACE8ITYsKzxABkIeCzwGHgM8FCMkNDEjCxVACTghHzInDQYuFx8rIwAvJCFAMxE8EQY5NRshDjURPho0ES8kNRYhOR44LwsJEQc5NBsjKyEAPg4hAAYsLjgeLDQRHg4yJTMsMiUNKzwAPh8mGzk5FyUzDTUHQQEuByADISxBIwMnOUANQAokMzYCICMXPjkDFzA1CS8pDTsxHhwzQAZCDS8gJjskNj8BCEE8FwcjADMvAjojLz4DAQMFHQ0sKTw7JCEHFzYKBjgxMDMNCwgGHgsiOSMWNAYjLD4SMy88OSMHPjA0AC8/OAAGDi4wPiQ1Jyw5ODEwLwMHM0E4MR4HOywzJjIXLzE8Lz4cOyQIQAklMyk0EBQfIRY7Kw8RLDkmGzlAHgguDi4HLBY0QAc4MzYzPA0DOwABAywFEhcCNTMQMD8XLC4GIzApNg8DB0ImFghAAQMNJB4kIjkBFiIT"
           
-          echo "==> Ներբեռնվում է ֆիրմվերը aria2c-ի միջոցով..."
-          aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o firmware.zip
-          
-          echo "==> Փնտրվում և բացվում է AP փաթեթը..."
-          unzip -q firmware.zip AP_*.tar.md5 || unzip -q firmware.zip *.tar.md5 || true
+          echo "==> Ներբեռնվում է AP ֆայլը aria2c-ի միջոցով..."
+          aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o ap_file.tar.md5
           
           echo "==> Դուրս է բերվում system.img.lz4-ը..."
-          tar -f AP_*.tar.md5 -x system.img.lz4 2>/dev/null || tar -f *.tar -x system.img.lz4 2>/dev/null || true
+          tar -f ap_file.tar.md5 -x system.img.lz4 2>/dev/null || true
 
       - name: Execute Port Script
         run: |
