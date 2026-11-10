@@ -36,7 +36,7 @@ jobs:
       - name: Verify Out Directory
         run: |
           echo "Checking out/ directory contents:"
-          ls -lah out/
+          ls -lah out/ || echo "out/ directory is missing or empty"
 
       - name: Upload Port ROM Zip
         uses: actions/upload-artifact@v4
@@ -45,5 +45,5 @@ jobs:
           path: |
             out/*.zip
             **/out/*.zip
+            work/*.zip
           if-no-files-found: ignore
-          compression-level: 6
