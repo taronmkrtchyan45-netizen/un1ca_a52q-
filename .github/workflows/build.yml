@@ -21,11 +21,5 @@ jobs:
         run: |
           git clone --recurse-submodules https://github.com/BlackMesa123/UN1CA.git unica_source
           cd unica_source
-          # Ստուգում ենք կամ կանչում ճիշտ բաշխման սկրիպտը
-          if [ -f "buildenv.sh" ]; then
-            chmod +x buildenv.sh
-            ./buildenv.sh a52q
-          else
-            echo "buildenv.sh not found in root, checking subfolders..."
-            find . -name "buildenv.sh"
-          fi
+          chmod +x buildenv.sh
+          ./buildenv.sh a52q
