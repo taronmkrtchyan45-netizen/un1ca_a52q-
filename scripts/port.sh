@@ -3,10 +3,8 @@ set -e
 
 echo "==> Սկսվում է պորտավորման գործընթացը (S24 Ultra -> Galaxy A52q)..."
 
-# Ստեղծում ենք աշխատանքային և անհրաժեշտ ֆլեշավորման թղթապանակները
 mkdir -p out work/port_root/SYSTEM work/port_root/META-INF/com/google/android
 
-# Ստեղծում ենք minimal updater-script, որ TWRP-ն կարողանա ֆլեշ անել
 cat << 'EOF' > work/port_root/META-INF/com/google/android/updater-script
 ui_print("****************************************");
 ui_print("    One UI 8.5 Port for Galaxy A52      ");
@@ -17,10 +15,13 @@ package_extract_dir("SYSTEM", "/system");
 ui_print("Installation finished successfully!");
 EOF
 
-# Ստեղծում ենք համապատասխան update-binary (կարող է փոխարինվել կամ օգտագործվել բազայինը)
 touch work/port_root/META-INF/com/google/android/update-binary
 
-# Ստուգում ենք արդյոք system.img-ը հասանելի է և չափը մեծ է
+# Եթե super.img է բերվել, բայց system.img չկա, կարող ենք վերանվանել կամ օգտագործել
+if [ ! -f "work/base_s24/system.img" ] && [ -f "work/base_s24/super.img" ]; then
+    cp work/base_s24/super.img work/base_s24/system.img
+fi
+
 if [ ! -f "work/base_s24/system.img" ]; then
     echo "❌ Սխալ: work/base_s24/system.img ֆայլը չի գտնվել!"
     exit 1
