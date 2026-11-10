@@ -37,46 +37,20 @@ jobs:
           echo "==> Ներբեռնվում է AP ֆայլը..."
           aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o ap_file.tar.md5
           
-          echo "==> Օգտագործում ենք Python՝ system.img.lz4 կամ super.img.lz4 դուրս բերելու համար..."
-          python3 - << 'EOF'
-          import tarfile
-          import os
+          echo "==> Extracting firmware image using 7z..."
+          7z x ap_file.tar.md5 *.lz4 *.img -y || true
 
-          tar_path = "ap_file.tar.md5"
-          target_files = ["system.img.lz4", "super.img.lz4", "system.img", "super.img"]
+          echo "==> Decompressing LZ4 images..."
+          for f in *.lz4; do
+              if [ -f "$f" ]; then
+                  echo "Decompressing $f..."
+                  lz4 -d -f "$f" "${f%.lz4}"
+                  rm -f "$f"
+              fi
+          done
 
-          try:
-              with tarfile.open(tar_path, "r:*") as tar:
-                  for member in tar.getmembers():
-                      basename = os.path.basename(member.name)
-                      if basename in target_files:
-                          print(f"==> Գտնվեց և արդյունահանվում է: {basename}")
-                          f = tar.extractfile(member)
-                          if f:
-                              with open(basename, "wb") as out_f:
-                                  out_f.write(f.read())
-                          break
-          except Exception as e:
-              print(f"❌ Python tar սխալ: {e}")
-          EOF
-
-          # Եթե Python-ով չստացվեց, 7z-ով ենք դուրս բերում
-          if [ ! -f "system.img.lz4" ] && [ ! -f "super.img.lz4" ] && [ ! -f "system.img" ] && [ ! -f "super.img" ]; then
-              echo "==> Փորձում ենք 7z-ով..."
-              7z e ap_file.tar.md5 system.img.lz4 super.img.lz4 system.img super.img -y || true
-          fi
-
-          echo "==> Ապասեղմում ենք lz4 ֆայլը..."
-          if [ -f "super.img.lz4" ]; then
-              lz4 -d -f super.img.lz4 super.img
-              rm -f super.img.lz4
-          elif [ -f "system.img.lz4" ]; then
-              lz4 -d -f system.img.lz4 system.img
-              rm -f system.img.lz4
-          fi
-
-          echo "==> Ստուգում ենք ստացված ֆայլերի չափերը․"
-          ls -lh system.img super.img 2>/dev/null || true
+          echo "==> Դուրս բերված ֆայլեր work/base_s24-ում․"
+          ls -lh
 
       - name: Execute Port Script
         run: |
