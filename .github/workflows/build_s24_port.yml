@@ -37,26 +37,45 @@ jobs:
           echo "==> Ներբեռնվում է AP ֆայլը..."
           aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o ap_file.tar.md5
           
-          echo "==> Հեռացվում է MD5 ստուգիչը պոչից tar-ի սխալները բացառելու համար..."
-          head -c -32 ap_file.tar.md5 > clean_ap.tar
-          
-          echo "==> Փնտրում ենք համակարգային ֆայլերը արխիվի ներսում..."
-          tar -tf clean_ap.tar | grep -E "system.img|super.img" || true
-          
-          echo "==> Արդյունահանում ենք ֆայլերը clean_ap.tar-ից..."
-          tar -f clean_ap.tar -x system.img.lz4 2>/dev/null || true
-          tar -f clean_ap.tar -x super.img.lz4 2>/dev/null || true
-          tar -f clean_ap.tar -x system.img 2>/dev/null || true
-          tar -f clean_ap.tar -x super.img 2>/dev/null || true
-          
+          echo "==> Օգտագործում ենք Python՝ system կամ super ֆայլերը անխափան դուրս բերելու համար..."
+          python3 - << 'EOF'
+          import tarfile
+          import os
+
+          tar_path = "ap_file.tar.md5"
+          target_files = ["system.img.lz4", "super.img.lz4", "system.img", "super.img"]
+
+          print("==> Կարդացվում է արխիվը Python-ի միջոցով...")
+          try:
+              with tarfile.open(tar_path, "r:*") as tar:
+                  for member in tar.getmembers():
+                      basename = os.path.basename(member.name)
+                      if basename in target_files:
+                          print(f"==> Գտնվեց և արդյունահանվում է: {basename}")
+                          tar.extract(member, path=".")
+                          if member.name != basename and os.path.exists(member.name):
+                              os.rename(member.name, basename)
+                          break
+          except Exception as e:
+              print(f"❌ Զգուշացում Python tar-ի ընթացքում: {e}")
+          EOF
+
+          # Եթե ուղղակիորեն չգտնվեց, փորձում ենք 7z-ով
+          if [ ! -f "system.img.lz4" ] && [ ! -f "super.img.lz4" ] && [ ! -f "system.img" ] && [ ! -f "super.img" ]; then
+              echo "==> Գործարկվում է 7z պահեստային եղանակը..."
+              7z e -so ap_file.tar.md5 system.img.lz4 > system.img.lz4 2>/dev/null || true
+              7z e -so ap_file.tar.md5 super.img.lz4 > super.img.lz4 2>/dev/null || true
+          fi
+
+          echo "==> Ապասեղմվում են ֆայլերը (եթե սեղմված են)..."
           if [ -f "super.img.lz4" ]; then
               unlz4 super.img.lz4 super.img || lz4 -d super.img.lz4 super.img
           elif [ -f "system.img.lz4" ]; then
               unlz4 system.img.lz4 system.img || lz4 -d system.img.lz4 system.img
           elif [ -f "system.img" ] || [ -f "super.img" ]; then
-              echo "==> Համակարգային ֆայլը հաջողությամբ դուրս բերվեց առանց սեղմման։"
+              echo "==> Համակարգային ֆայլը պատրաստ է։"
           else
-              echo "❌ Սխալ: Համակարգային img ֆայլ չգտնվեց արխիվից!"
+              echo "❌ Սխալ: Համակարգային ֆայլը հնարավոր չեղավ գտնել արխիվից!"
               exit 1
           fi
           
