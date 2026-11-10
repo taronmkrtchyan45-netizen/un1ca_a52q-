@@ -19,7 +19,7 @@ jobs:
       - name: Setup Tools & Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git lz4 cpio wget zip zstd
+          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git lz4 cpio wget zip zstd file
 
       - name: Download Trees & Base ROM
         run: |
@@ -34,16 +34,19 @@ jobs:
           
           FIRMWARE_URL="https://sf04.click/v2/IxJCDiMnLh80QA0wIxEGPC4WLwQyCB4lFzssIDs2ByAzMUEgOzEUQDMQMCMBOyw/FydBBxIRIRQNOx4HLycvCg8HLyQyAD4bNTEvEA07BiMzOCMGEjYGFDIIKSEhCAcHPBEeHS4wLhY8MCwnARYzLS82FDsjCyw5EjgsJTw4QQQhACE8ITYsKzxABkIeCzwGHgM8FCMkNDEjCxVACTghHzInDQYuFx8rIwAvJCFAMxE8EQY5NRshDjURPho0ES8kNRYhOR44LwsJEQc5NBsjKyEAPg4hAAYsLjgeLDQRHg4yJTMsMiUNKzwAPh8mGzk5FyUzDTUHQQEuByADISxBIwMnOUANQAokMzYCICMXPjkDFzA1CS8pDTsxHhwzQAZCDS8gJjskNj8BCEE8FwcjADMvAjojLz4DAQMFHQ0sKTw7JCEHFzYKBjgxMDMNCwgGHgsiOSMWNAYjLD4SMy88OSMHPjA0AC8/OAAGDi4wPiQ1Jyw5ODEwLwMHM0E4MR4HOywzJjIXLzE8Lz4cOyQIQAklMyk0EBQfIRY7Kw8RLDkmGzlAHgguDi4HLBY0QAc4MzYzPA0DOwABAywFEhcCNTMQMD8XLC4GIzApNg8DB0ImFghAAQMNJB4kIjkBFiIT"
           
-          echo "==> Ներբեռնվում է AP ֆայլը..."
+          echo "==> Ներբեռնվում է AP ֆայլը aria2c-ի միջոցով..."
           aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o ap_file.tar.md5
           
-          echo "==> Ստուգվում և դուրս է բերվում համակարգային ֆայլը AP արխիվից..."
-          tar -tf ap_file.tar.md5 | grep -E "system|super" || true
+          echo "==> Ստուգվում է բեռնված ֆայլի չափը..."
+          ls -lh ap_file.tar.md5
           
-          # Փորձում ենք դուրս բերել հնարավոր ճիշտ ֆայլերը
-          tar -f ap_file.tar.md5 -x system.img.lz4 2>/dev/null || true
-          tar -f ap_file.tar.md5 -x super.img.lz4 2>/dev/null || true
-          tar -f ap_file.tar.md5 -x system.img.zst 2>/dev/null || true
+          if [ $(stat -c%s "ap_file.tar.md5") -lt 500000000 ]; then
+              echo "❌ Սխալ: Բեռնված ֆայլը չափազանց փոքր է կամ հղումն անվավեր է!"
+              exit 1
+          fi
+          
+          echo "==> Դուրս է բերվում համակարգային ֆայլը AP արխիվից..."
+          tar -f ap_file.tar.md5 -x system.img.lz4 2>/dev/null || tar -f ap_file.tar.md5 -x super.img.lz4 2>/dev/null || true
           
           if [ -f "super.img.lz4" ]; then
               echo "==> Ապասեղմվում է super.img.lz4-ը..."
@@ -51,11 +54,8 @@ jobs:
           elif [ -f "system.img.lz4" ]; then
               echo "==> Ապասեղմվում է system.img.lz4-ը..."
               unlz4 system.img.lz4 system.img || lz4 -d system.img.lz4 system.img
-          elif [ -f "system.img.zst" ]; then
-              echo "==> Ապասեղմվում է system.img.zst-ը..."
-              zstd -d system.img.zst -o system.img
           else
-              echo "❌ Ոչ մի համակարգային img ֆայլ չգտնվեց արխիվից!"
+              echo "❌ Համակարգային img ֆայլ չգտնվեց արխիվի ներսում!"
               exit 1
           fi
           
