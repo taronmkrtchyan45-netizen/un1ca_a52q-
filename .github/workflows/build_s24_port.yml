@@ -20,7 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y aria2 p7zip-full python3 python3-pip android-sdk-libsparse-utils git lz4 cpio wget zip zstd file
-          python3 -m pip install samloader
+          python3 -m pip install --break-system-packages git+https://github.com/nethunteros/samloader.git || python3 -m pip install git+https://github.com/nethunteros/samloader.git
 
       - name: Download Trees & Base ROM
         run: |
@@ -33,10 +33,12 @@ jobs:
         run: |
           cd work/base_s24
           
-          echo "==> Ներբեռնվում է S24 Ultra (SM-S928B) ֆիրմվերը անմիջապես Samsung-ի սերվերից..."
-          samloader -m SM-S928B -r EUX download -o firmware.zip
+          echo "==> Ներբեռնվում է S24 Ultra (SM-S928B) ֆիրմվերը Samsung-ից..."
+          samloader -m SM-S928B -r EUX download -o firmware.zip || \
+          samloader -m SM-S928B -r INS download -o firmware.zip || \
+          samloader -m SM-S928B -r KOO download -o firmware.zip
           
-          echo "==> Ապասեղմում ենք ներբեռնված firmware.zip-ը..."
+          echo "==> Ապասեղմում ենք firmware.zip-ը..."
           unzip firmware.zip
           
           echo "==> Գտնում ենք AP ֆայլը..."
