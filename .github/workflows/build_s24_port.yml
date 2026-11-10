@@ -19,7 +19,8 @@ jobs:
       - name: Setup Tools & Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git lz4 cpio wget zip zstd file
+          sudo apt-get install -y aria2 p7zip-full python3 python3-pip android-sdk-libsparse-utils git lz4 cpio wget zip zstd file
+          python3 -m pip install samloader
 
       - name: Download Trees & Base ROM
         run: |
@@ -28,17 +29,21 @@ jobs:
           git clone https://github.com/crdroidandroid/android_device_samsung_a52q.git device/samsung/a52q
           git clone https://github.com/TheMuppets/proprietary_vendor_samsung_a52q.git -b lineage-21 vendor/samsung/a52q
 
-      - name: Download S24 Ultra Firmware & Extract
+      - name: Download S24 Ultra Official Firmware & Extract
         run: |
           cd work/base_s24
           
-          FIRMWARE_URL="https://sf04.click/v2/IxJCDiMnLh80QA0wIxEGPC4WLwQyCB4lFzssIDs2ByAzMUEgOzEUQDMQMCMBOyw/FydBBxIRIRQNOx4HLycvCg8HLyQyAD4bNTEvEA07BiMzOCMGEjYGFDIIKSEhCAcHPBEeHS4wLhY8MCwnARYzLS82FDsjCyw5EjgsJTw4QQQhACE8ITYsKzxABkIeCzwGHgM8FCMkNDEjCxVACTghHzInDQYuFx8rIwAvJCFAMxE8EQY5NRshDjURPho0ES8kNRYhOR44LwsJEQc5NBsjKyEAPg4hAAYsLjgeLDQRHg4yJTMsMiUNKzwAPh8mGzk5FyUzDTUHQQEuByADISxBIwMnOUANQAokMzYCICMXPjkDFzA1CS8pDTsxHhwzQAZCDS8gJjskNj8BCEE8FwcjADMvAjojLz4DAQMFHQ0sKTw7JCEHFzYKBjgxMDMNCwgGHgsiOSMWNAYjLD4SMy88OSMHPjA0AC8/OAAGDi4wPiQ1Jyw5ODEwLwMHM0E4MR4HOywzJjIXLzE8Lz4cOyQIQAklMyk0EBQfIRY7Kw8RLDkmGzlAHgguDi4HLBY0QAc4MzYzPA0DOwABAywFEhcCNTMQMD8XLC4GIzApNg8DB0ImFghAAQMNJB4kIjkBFiIT"
+          echo "==> Ներբեռնվում է S24 Ultra (SM-S928B) ֆիրմվերը անմիջապես Samsung-ի սերվերից..."
+          samloader -m SM-S928B -r EUX download -o firmware.zip
           
-          echo "==> Ներբեռնվում է AP ֆայլը..."
-          aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o ap_file.tar.md5
+          echo "==> Ապասեղմում ենք ներբեռնված firmware.zip-ը..."
+          unzip firmware.zip
           
-          echo "==> Extracting firmware image using 7z..."
-          7z x ap_file.tar.md5 *.lz4 *.img -y || true
+          echo "==> Գտնում ենք AP ֆայլը..."
+          AP_FILE=$(ls AP_*.tar.md5 | head -n 1)
+          
+          echo "==> Extracting $AP_FILE using 7z..."
+          7z x "$AP_FILE" *.lz4 *.img -y || true
 
           echo "==> Decompressing LZ4 images..."
           for f in *.lz4; do
@@ -49,7 +54,7 @@ jobs:
               fi
           done
 
-          echo "==> Դուրս բերված ֆայլեր work/base_s24-ում․"
+          echo "==> Դուրս բերված ֆայլերը work/base_s24-ում․"
           ls -lh
 
       - name: Execute Port Script
