@@ -3,8 +3,28 @@ set -e
 
 echo "==> Սկսվում է պորտավորման գործընթացը (S24 Ultra -> Galaxy A52q)..."
 
-mkdir -p out work/port_root/SYSTEM work/port_root/META-INF/com/google/android
+mkdir -p out work/port_root/SYSTEM work/port_root/META-INF/com/google/android work/base_s24
 
+# Դինամիկ որոնում ենք system.img կամ super.img ցանկացած տեղ work/ թղթապանակում
+IMG_PATH=$(find work -type f \( -name "system.img" -o -name "super.img" \) | head -n 1)
+
+if [ -z "$IMG_PATH" ]; then
+    echo "❌ Սխալ: system.img կամ super.img ֆայլը չի գտնվել որեւէ թղթապանակում!"
+    exit 1
+fi
+
+echo "==> Համակարգային ֆայլը հայտնաբերվել է՝ $IMG_PATH"
+cp -f "$IMG_PATH" work/base_s24/system.img
+
+IMG_SIZE=$(stat -c%s "work/base_s24/system.img")
+echo "==> system.img չափը՝ $IMG_SIZE բայթ"
+
+if [ "$IMG_SIZE" -lt 1000000 ]; then
+    echo "❌ Սխալ: system.img ֆայլը չափազանց փոքր է կամ դատարկ!"
+    exit 1
+fi
+
+# Ստեղծում ենք updater-script
 cat << 'EOF' > work/port_root/META-INF/com/google/android/updater-script
 ui_print("****************************************");
 ui_print("    One UI 8.5 Port for Galaxy A52      ");
@@ -16,24 +36,6 @@ ui_print("Installation finished successfully!");
 EOF
 
 touch work/port_root/META-INF/com/google/android/update-binary
-
-# Եթե super.img է բերվել, բայց system.img չկա, կարող ենք վերանվանել կամ օգտագործել
-if [ ! -f "work/base_s24/system.img" ] && [ -f "work/base_s24/super.img" ]; then
-    cp work/base_s24/super.img work/base_s24/system.img
-fi
-
-if [ ! -f "work/base_s24/system.img" ]; then
-    echo "❌ Սխալ: work/base_s24/system.img ֆայլը չի գտնվել!"
-    exit 1
-fi
-
-IMG_SIZE=$(stat -c%s "work/base_s24/system.img")
-echo "==> system.img չափը՝ $IMG_SIZE բայթ"
-
-if [ "$IMG_SIZE" -lt 1000000 ]; then
-    echo "❌ Սխալ: system.img ֆայլը չափազանց փոքր է կամ դատարկ!"
-    exit 1
-fi
 
 echo "==> Պատրաստվում է ROM-ի կառուցվածքը..."
 cp work/base_s24/system.img work/port_root/SYSTEM/system.img
