@@ -17,8 +17,15 @@ jobs:
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
 
-      - name: Build UN1CA
+      - name: Clone and Setup UN1CA
         run: |
-          git clone --recurse-submodules https://github.com/BlackMesa123/UN1CA.git && cd UN1CA
-          chmod +x buildenv.sh
-          ./buildenv.sh a52q
+          git clone --recurse-submodules https://github.com/BlackMesa123/UN1CA.git unica_source
+          cd unica_source
+          # Ստուգում ենք կամ կանչում ճիշտ բաշխման սկրիպտը
+          if [ -f "buildenv.sh" ]; then
+            chmod +x buildenv.sh
+            ./buildenv.sh a52q
+          else
+            echo "buildenv.sh not found in root, checking subfolders..."
+            find . -name "buildenv.sh"
+          fi
