@@ -19,7 +19,7 @@ jobs:
       - name: Setup Tools & Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git lz4 cpio wget
+          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git lz4 cpio wget zip
 
       - name: Download Trees & Base ROM
         run: |
@@ -28,21 +28,27 @@ jobs:
           git clone https://github.com/crdroidandroid/android_device_samsung_a52q.git device/samsung/a52q
           git clone https://github.com/TheMuppets/proprietary_vendor_samsung_a52q.git -b lineage-21 vendor/samsung/a52q
 
-      - name: Download S24 Ultra Firmware
+      - name: Download S24 Ultra Firmware & Extract
         run: |
           cd work/base_s24
           
-          # Քո ուղիղ հղումը Samfw-ից
           FIRMWARE_URL="https://sf04.click/v2/IxJCDiMnLh80QA0wIxEGPC4WLwQyCB4lFzssIDs2ByAzMUEgOzEUQDMQMCMBOyw/FydBBxIRIRQNOx4HLycvCg8HLyQyAD4bNTEvEA07BiMzOCMGEjYGFDIIKSEhCAcHPBEeHS4wLhY8MCwnARYzLS82FDsjCyw5EjgsJTw4QQQhACE8ITYsKzxABkIeCzwGHgM8FCMkNDEjCxVACTghHzInDQYuFx8rIwAvJCFAMxE8EQY5NRshDjURPho0ES8kNRYhOR44LwsJEQc5NBsjKyEAPg4hAAYsLjgeLDQRHg4yJTMsMiUNKzwAPh8mGzk5FyUzDTUHQQEuByADISxBIwMnOUANQAokMzYCICMXPjkDFzA1CS8pDTsxHhwzQAZCDS8gJjskNj8BCEE8FwcjADMvAjojLz4DAQMFHQ0sKTw7JCEHFzYKBjgxMDMNCwgGHgsiOSMWNAYjLD4SMy88OSMHPjA0AC8/OAAGDi4wPiQ1Jyw5ODEwLwMHM0E4MR4HOywzJjIXLzE8Lz4cOyQIQAklMyk0EBQfIRY7Kw8RLDkmGzlAHgguDi4HLBY0QAc4MzYzPA0DOwABAywFEhcCNTMQMD8XLC4GIzApNg8DB0ImFghAAQMNJB4kIjkBFiIT"
           
-          echo "==> Ներբեռնվում է AP ֆայլը aria2c-ի միջոցով..."
+          echo "==> Ներբեռնվում է AP ֆայլը..."
           aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o ap_file.tar.md5
           
           echo "==> Դուրս է բերվում system.img.lz4-ը..."
           tar -f ap_file.tar.md5 -x system.img.lz4 2>/dev/null || true
           
-          echo "==> Ապասեղմվում է system.img.lz4-ը unlz4-ի միջոցով..."
-          unlz4 system.img.lz4 system.img || lz4 -d system.img.lz4 system.img || true
+          echo "==> Ապասեղմվում է system.img.lz4-ը..."
+          if [ -f "system.img.lz4" ]; then
+              unlz4 system.img.lz4 system.img || lz4 -d system.img.lz4 system.img
+          else
+              echo "❌ system.img.lz4 ֆայլը չի գտնվել տարբերակում!"
+              exit 1
+          fi
+          
+          ls -lh system.img
 
       - name: Execute Port Script
         run: |
