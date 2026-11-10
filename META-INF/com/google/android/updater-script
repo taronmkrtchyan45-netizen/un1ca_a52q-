@@ -1,0 +1,9 @@
+ui_print("----------------------------------------");
+ui_print("      UN1CA One UI Port for A52q       ");
+ui_print("----------------------------------------");
+ui_print("Stagging partitions and flashing...");
+
+package_extract_file("boot.img", "/dev/block/bootdevice/by-name/boot");
+package_extract_file("dtbo.img", "/dev/block/bootdevice/by-name/dtbo");
+
+ui_print("Flashing completed successfully!");
