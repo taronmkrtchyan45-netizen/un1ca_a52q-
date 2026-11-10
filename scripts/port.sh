@@ -5,11 +5,11 @@ echo "==> Սկսվում է պորտավորման գործընթացը (S24 Ult
 
 mkdir -p out work/port_root/SYSTEM work/port_root/META-INF/com/google/android work/base_s24
 
-# Դինամիկ որոնում ենք system.img կամ super.img ցանկացած տեղ work/ թղթապանակում
-IMG_PATH=$(find work -type f \( -name "system.img" -o -name "super.img" \) | head -n 1)
+# Փնտրում ենք ցանկացած img ֆայլ (super.img, system.img, kwn.img և այլն)
+IMG_PATH=$(find work/base_s24 -type f \( -name "super.img" -o -name "system.img" \) | head -n 1)
 
 if [ -z "$IMG_PATH" ]; then
-    echo "❌ Սխալ: system.img կամ super.img ֆայլը չի գտնվել որեւէ թղթապանակում!"
+    echo "❌ Սխալ: system.img կամ super.img ֆայլը չի գտնվել work/base_s24 թղթապանակում!"
     exit 1
 fi
 
@@ -24,7 +24,7 @@ if [ "$IMG_SIZE" -lt 1000000 ]; then
     exit 1
 fi
 
-# Ստեղծում ենք TWRP ֆլեշավորման updater-script-ը
+# Ստեղծում ենք TWRP-ի համար updater-script
 cat << 'EOF' > work/port_root/META-INF/com/google/android/updater-script
 ui_print("****************************************");
 ui_print("    One UI 8.5 Port for Galaxy A52      ");
