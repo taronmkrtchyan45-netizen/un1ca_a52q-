@@ -19,15 +19,17 @@ jobs:
       - name: Setup Tools & Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git
+          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git lz4 cpio wget
 
       - name: Download Trees & Base ROM
         run: |
-          mkdir -p work
+          mkdir -p work/base_s24 work/vendor_a52q
           cd work
           # A52q Vendor & Kernel trees
           git clone https://github.com/crdroidandroid/android_device_samsung_a52q.git device/samsung/a52q
           git clone https://github.com/TheMuppets/proprietary_vendor_samsung_a52q.git -b lineage-21 vendor/samsung/a52q
+
+          # Ներբեռնում ենք S24 Ultra-ի փոքրիկ test system.img կամ պաշտոնական ֆիրմվեր (այստեղ տեղադրվում է S24-ի հղումը կամ ապափաթեթավորման տրամաբանությունը)
 
       - name: Execute Port Script
         run: |
