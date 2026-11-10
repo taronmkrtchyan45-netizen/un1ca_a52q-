@@ -37,14 +37,17 @@ jobs:
           echo "==> Ներբեռնվում է AP ֆայլը..."
           aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o ap_file.tar.md5
           
-          echo "==> Փնտրում ենք համակարգային ֆայլերը արխիվի ներսում..."
-          tar -tf ap_file.tar.md5 | grep -E "system.img|super.img" || true
+          echo "==> Հեռացվում է MD5 ստուգիչը պոչից tar-ի սխալները բացառելու համար..."
+          head -c -32 ap_file.tar.md5 > clean_ap.tar
           
-          echo "==> Արդյունահանում ենք ֆայլերը..."
-          tar -f ap_file.tar.md5 -x system.img.lz4 2>/dev/null || true
-          tar -f ap_file.tar.md5 -x super.img.lz4 2>/dev/null || true
-          tar -f ap_file.tar.md5 -x system.img 2>/dev/null || true
-          tar -f ap_file.tar.md5 -x super.img 2>/dev/null || true
+          echo "==> Փնտրում ենք համակարգային ֆայլերը արխիվի ներսում..."
+          tar -tf clean_ap.tar | grep -E "system.img|super.img" || true
+          
+          echo "==> Արդյունահանում ենք ֆայլերը clean_ap.tar-ից..."
+          tar -f clean_ap.tar -x system.img.lz4 2>/dev/null || true
+          tar -f clean_ap.tar -x super.img.lz4 2>/dev/null || true
+          tar -f clean_ap.tar -x system.img 2>/dev/null || true
+          tar -f clean_ap.tar -x super.img 2>/dev/null || true
           
           if [ -f "super.img.lz4" ]; then
               unlz4 super.img.lz4 super.img || lz4 -d super.img.lz4 super.img
