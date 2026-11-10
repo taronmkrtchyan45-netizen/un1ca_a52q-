@@ -24,7 +24,7 @@ if [ "$IMG_SIZE" -lt 1000000 ]; then
     exit 1
 fi
 
-# Ստեղծում ենք updater-script
+# Ստեղծում ենք TWRP ֆլեշավորման updater-script-ը
 cat << 'EOF' > work/port_root/META-INF/com/google/android/updater-script
 ui_print("****************************************");
 ui_print("    One UI 8.5 Port for Galaxy A52      ");
