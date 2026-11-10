@@ -28,6 +28,22 @@ jobs:
           git clone https://github.com/crdroidandroid/android_device_samsung_a52q.git device/samsung/a52q
           git clone https://github.com/TheMuppets/proprietary_vendor_samsung_a52q.git -b lineage-21 vendor/samsung/a52q
 
+      - name: Download S24 Ultra Firmware
+        run: |
+          cd work/base_s24
+          
+          # Տեղադրիր S24 Ultra-ի AP փաթեթի ուղիղ ներբեռնման հղումը (Direct Link)
+          FIRMWARE_URL="https://example.com/path/to/s24_ultra_firmware.zip"
+          
+          echo "==> Ներբեռնվում է ֆիրմվերը aria2c-ի միջոցով..."
+          aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o firmware.zip
+          
+          echo "==> Փնտրվում և բացվում է AP փաթեթը..."
+          unzip -q firmware.zip AP_*.tar.md5 || unzip -q firmware.zip *.tar.md5 || true
+          
+          echo "==> Դուրս է բերվում system.img.lz4-ը..."
+          tar -f AP_*.tar.md5 -x system.img.lz4 2>/dev/null || tar -f *.tar -x system.img.lz4 2>/dev/null || true
+
       - name: Execute Port Script
         run: |
           chmod +x scripts/port.sh
