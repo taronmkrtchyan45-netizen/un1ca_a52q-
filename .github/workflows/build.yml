@@ -24,3 +24,9 @@ jobs:
           sed -i '169s/return/exit/' buildenv.sh
           chmod +x buildenv.sh
           ./buildenv.sh a52q
+
+      - name: Upload ROM Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: UN1CA-A52Q-ROM
+          path: unica_source/out/*.zip
