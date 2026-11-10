@@ -31,4 +31,5 @@ jobs:
 
       - name: Execute Port Script
         run: |
+          chmod +x scripts/port.sh
           bash scripts/port.sh
