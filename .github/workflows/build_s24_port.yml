@@ -19,7 +19,7 @@ jobs:
       - name: Setup Tools & Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git lz4 cpio wget zip
+          sudo apt-get install -y aria2 p7zip-full python3 android-sdk-libsparse-utils git lz4 cpio wget zip zstd
 
       - name: Download Trees & Base ROM
         run: |
@@ -37,18 +37,29 @@ jobs:
           echo "==> Ներբեռնվում է AP ֆայլը..."
           aria2c -x 16 -s 16 --max-connection-per-server=16 "$FIRMWARE_URL" -o ap_file.tar.md5
           
-          echo "==> Դուրս է բերվում system.img.lz4-ը..."
-          tar -f ap_file.tar.md5 -x system.img.lz4 2>/dev/null || true
+          echo "==> Ստուգվում և դուրս է բերվում համակարգային ֆայլը AP արխիվից..."
+          tar -tf ap_file.tar.md5 | grep -E "system|super" || true
           
-          echo "==> Ապասեղմվում է system.img.lz4-ը..."
-          if [ -f "system.img.lz4" ]; then
+          # Փորձում ենք դուրս բերել հնարավոր ճիշտ ֆայլերը
+          tar -f ap_file.tar.md5 -x system.img.lz4 2>/dev/null || true
+          tar -f ap_file.tar.md5 -x super.img.lz4 2>/dev/null || true
+          tar -f ap_file.tar.md5 -x system.img.zst 2>/dev/null || true
+          
+          if [ -f "super.img.lz4" ]; then
+              echo "==> Ապասեղմվում է super.img.lz4-ը..."
+              unlz4 super.img.lz4 super.img || lz4 -d super.img.lz4 super.img
+          elif [ -f "system.img.lz4" ]; then
+              echo "==> Ապասեղմվում է system.img.lz4-ը..."
               unlz4 system.img.lz4 system.img || lz4 -d system.img.lz4 system.img
+          elif [ -f "system.img.zst" ]; then
+              echo "==> Ապասեղմվում է system.img.zst-ը..."
+              zstd -d system.img.zst -o system.img
           else
-              echo "❌ system.img.lz4 ֆայլը չի գտնվել տարբերակում!"
+              echo "❌ Ոչ մի համակարգային img ֆայլ չգտնվեց արխիվից!"
               exit 1
           fi
           
-          ls -lh system.img
+          ls -lh system.img || ls -lh super.img
 
       - name: Execute Port Script
         run: |
