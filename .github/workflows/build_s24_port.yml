@@ -29,9 +29,20 @@ jobs:
           git clone https://github.com/crdroidandroid/android_device_samsung_a52q.git device/samsung/a52q
           git clone https://github.com/TheMuppets/proprietary_vendor_samsung_a52q.git -b lineage-21 vendor/samsung/a52q
 
-          # Ներբեռնում ենք S24 Ultra-ի փոքրիկ test system.img կամ պաշտոնական ֆիրմվեր (այստեղ տեղադրվում է S24-ի հղումը կամ ապափաթեթավորման տրամաբանությունը)
-
       - name: Execute Port Script
         run: |
           chmod +x scripts/port.sh
           bash scripts/port.sh
+
+      - name: Verify Out Directory
+        run: |
+          echo "Checking out/ directory contents:"
+          ls -lah out || echo "out/ directory is missing!"
+
+      - name: Upload Port ROM Zip
+        uses: actions/upload-artifact@v4
+        with:
+          name: OneUI8.5_S24Ultra_Port_A52q
+          path: out/*.zip
+          if-no-files-found: ignore
+          compression-level: 6
