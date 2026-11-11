@@ -1,4 +1,4 @@
-name: Build S24 Ultra Port for A52
+name: Build S24 Ultra OneUI Port for A52
 
 on:
   workflow_dispatch:
@@ -12,7 +12,7 @@ jobs:
 
       - name: Free Disk Space
         run: |
-          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /usr/local/share/powershell
           sudo apt-get clean
           df -h
 
@@ -20,47 +20,28 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y aria2 p7zip-full python3 python3-pip android-sdk-libsparse-utils git lz4 cpio wget zip zstd file python3-requests python3-crypto python3-tqdm
-          
-          # Բեռնում ենք samloader-ը աշխատող հղումով (main ճյուղով)
-          python3 -m pip install --break-system-packages https://github.com/nethunteros/samloader/archive/refs/heads/main.zip || \
-          python3 -m pip install https://github.com/nethunteros/samloader/archive/refs/heads/main.zip
 
-      - name: Download Trees & Base ROM
+      - name: Download Base super.img from Google Drive
         run: |
-          mkdir -p work/base_s24 work/vendor_a52q
-          cd work
-          git clone https://github.com/crdroidandroid/android_device_samsung_a52q.git device/samsung/a52q
-          git clone https://github.com/TheMuppets/proprietary_vendor_samsung_a52q.git -b lineage-21 vendor/samsung/a52q
-
-      - name: Download S24 Ultra Official Firmware & Extract
-        run: |
+          mkdir -p work/base_s24
           cd work/base_s24
           
-          echo "==> Ներբեռնվում է S24 Ultra (SM-S928B) ֆիրմվերը Samsung-ից..."
-          samloader -m SM-S928B -r EUX download -o firmware.zip || \
-          samloader -m SM-S928B -r INS download -o firmware.zip || \
-          samloader -m SM-S928B -r KOO download -o firmware.zip
+          echo "==> Տեղադրում ենք gdown..."
+          python3 -m pip install --break-system-packages gdown || python3 -m pip install gdown
           
-          echo "==> Ապասեղմում ենք firmware.zip-ը..."
-          unzip firmware.zip
+          echo "==> Ներբեռնում ենք super.img-ն Google Drive-ից..."
+          gdown --id 11CRFJZDBdmSyexLBg6HMgMcoCxDEUFgF -O super.img --fuzzy
           
-          echo "==> Գտնում ենք AP ֆայլը..."
-          AP_FILE=$(ls AP_*.tar.md5 | head -n 1)
-          
-          echo "==> Extracting $AP_FILE using 7z..."
-          7z x "$AP_FILE" *.lz4 *.img -y || true
+          echo "==> Ստուգում ենք ներբեռնված super.img-ի չափը..."
+          ls -lh super.img
 
-          echo "==> Decompressing LZ4 images..."
-          for f in *.lz4; do
-              if [ -f "$f" ]; then
-                  echo "Decompressing $f..."
-                  lz4 -d -f "$f" "${f%.lz4}"
-                  rm -f "$f"
-              fi
-          done
-
-          echo "==> Դուրս բերված ֆայլերը work/base_s24-ում․"
-          ls -lh
+      - name: Download Device Trees
+        run: |
+          mkdir -p work/vendor_a52q
+          cd work
+          echo "==> Կլոնավորում ենք A52q-ի տրիները..."
+          git clone https://github.com/crdroidandroid/android_device_samsung_a52q.git device/samsung/a52q || true
+          git clone https://github.com/TheMuppets/proprietary_vendor_samsung_a52q.git -b lineage-21 vendor/samsung/a52q || true
 
       - name: Execute Port Script
         run: |
@@ -75,7 +56,7 @@ jobs:
       - name: Upload Port ROM Zip
         uses: actions/upload-artifact@v4
         with:
-          name: OneUI8.5_S24Ultra_Port_A52q
+          name: OneUI_S24Ultra_Port_A52q
           path: |
             out/*.zip
             **/out/*.zip
