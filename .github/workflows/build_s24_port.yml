@@ -30,7 +30,7 @@ jobs:
           python3 -m pip install --break-system-packages gdown || python3 -m pip install gdown
           
           echo "==> Ներբեռնում ենք super.img-ն Google Drive-ից..."
-          gdown --id 11CRFJZDBdmSyexLBg6HMgMcoCxDEUFgF -O super.img --fuzzy
+          gdown "https://drive.google.com/file/d/11CRFJZDBdmSyexLBg6HMgMcoCxDEUFgF/view?usp=sharing" -O super.img
           
           echo "==> Ստուգում ենք ներբեռնված super.img-ի չափը..."
           ls -lh super.img
