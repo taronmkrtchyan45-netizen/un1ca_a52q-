@@ -21,11 +21,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y aria2 p7zip-full python3 python3-pip android-sdk-libsparse-utils git lz4 cpio wget zip zstd file
           
-          # Ուղղակիորեն բեռնում և տեղադրում ենք samloader-ը առանց git clone-ի սխալների
-          git clone --depth 1 https://github.com/nethunteros/samloader.git /tmp/samloader
-          cd /tmp/samloader
-          python3 -m pip install --break-system-packages . || python3 -m pip install .
-          cd -
+          # Տեղադրում ենք samloader-ը ուղղակիորեն GitHub-ի հղումով
+          python3 -m pip install --break-system-packages https://github.com/nethunteros/samloader/archive/refs/heads/master.zip || \
+          python3 -m pip install https://github.com/nethunteros/samloader/archive/refs/heads/master.zip
 
       - name: Download Trees & Base ROM
         run: |
