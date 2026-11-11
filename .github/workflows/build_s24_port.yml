@@ -19,11 +19,7 @@ jobs:
       - name: Setup Tools & Dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y aria2 p7zip-full python3 python3-pip android-sdk-libsparse-utils git lz4 cpio wget zip zstd file
-          
-          # Տեղադրում ենք samloader-ը ուղղակիորեն GitHub-ի հղումով
-          python3 -m pip install --break-system-packages https://github.com/nethunteros/samloader/archive/refs/heads/master.zip || \
-          python3 -m pip install https://github.com/nethunteros/samloader/archive/refs/heads/master.zip
+          sudo apt-get install -y aria2 p7zip-full python3 python3-pip android-sdk-libsparse-utils git lz4 cpio wget zip zstd file python3-requests python3-crypto python3-tqdm
 
       - name: Download Trees & Base ROM
         run: |
@@ -36,10 +32,14 @@ jobs:
         run: |
           cd work/base_s24
           
-          echo "==> Ներբեռնվում է S24 Ultra (SM-S928B) ֆիրմվերը Samsung-ից..."
-          samloader -m SM-S928B -r EUX download -o firmware.zip || \
-          samloader -m SM-S928B -r INS download -o firmware.zip || \
-          samloader -m SM-S928B -r KOO download -o firmware.zip
+          echo "==> Ներբեռնվում է samloader.py սկրիպտը..."
+          wget -q https://raw.githubusercontent.com/nethunteros/samloader/main/samloader/samloader.py -O samloader.py || \
+          wget -q https://raw.githubusercontent.com/bolls/samloader/master/samloader/samloader.py -O samloader.py
+          
+          echo "==> Ներբեռնվում է S24 Ultra (SM-S928B) ֆիրմվերը Samsung-ի պաշտոնական սերվերից..."
+          python3 samloader.py -m SM-S928B -r EUX download -o firmware.zip || \
+          python3 samloader.py -m SM-S928B -r INS download -o firmware.zip || \
+          python3 samloader.py -m SM-S928B -r KOO download -o firmware.zip
           
           echo "==> Ապասեղմում ենք firmware.zip-ը..."
           unzip firmware.zip
